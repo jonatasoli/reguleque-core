@@ -1,19 +1,15 @@
 from typing import Optional
 
 from fastapi import FastAPI
+from search.api import search
+from user.api import user
 
 
-app = FastAPI()
+
 
 def create_app():
+    app = FastAPI()
+    app.include_router(search)
+    app.include_router(user)
     return app
 
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Optional[str] = None):
-    return {"item_id": item_id, "q": q}
