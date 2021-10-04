@@ -34,4 +34,4 @@ async def dashboard(
     token: str = Depends(oauth2_scheme),
     auth: Auth = Depends()
 ):
-   return await auth.dashboard(token)
+    return await auth.dashboard(token)
