@@ -16,7 +16,6 @@ sys.path.append(root_dir)
 
 # meta = BaseModel.metadata
 
-
 @pytest.fixture(scope="session", autouse=True)
 def set_test_settings():
     settings.configure(FORCE_ENV_FOR_DYNACONF="testing")

@@ -20,6 +20,8 @@ sqlalchemy = "*"
 requests = "*"
 locust = "*"
 httpx = "*"
+python-jose = {version = "^3.3.0", extras = ["cryptograpy"]}
+passlib = {version = "^1.7.4", extras = ["bcrypt"]}
 
 [tool.poetry.dev-dependencies]
 jedi = "*"

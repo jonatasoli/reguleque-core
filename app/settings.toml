@@ -1,0 +1,7 @@
+[default]
+
+[development]
+DB_DSN_URI = "postgresql://partyoudbuser:partyou123@172.15.0.2/coredb"
+
+[testing]
+DB_DSN_URI = "postgresql://partyoudbuser:partyou123@172.15.0.2/coredb"
