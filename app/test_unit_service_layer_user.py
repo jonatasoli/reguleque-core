@@ -1,45 +1,62 @@
 import pytest
 import httpx
-import enum
 from functools import wraps
 from dynaconf import settings
 from loguru import logger
 from datetime import datetime, timedelta
 from typing import Optional
 
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
 
-from jose import JWTError, jwt
-from fastapi import HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
 
 from user.unit_of_work import AbstractUnitOfWork
-from domain import SignUp, User
+from user.repository import AbstractRepository
+from domain import SignUp, User, Role
+from user.service_layer import Auth
 
 
+class FakeRepository(AbstractRepository):
+    def __init__(self, user):
+        self._user = set(user)
+        self.id = 0
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="access_token")
+    def add(self, user):
+        self.id +=1
+        self._user.add(user)
+        user.id = self.id
+        return user
 
-class Roles(enum.Enum):
-    USER = 1
-    ADMIN = 2
+    def get(self, email):
+        return next(b for b in self._user if b.email == email)
+
+    def list(self):
+        return list(self._user)
+
+
+class FakeUnitOfWork(AbstractUnitOfWork):
+    def __init__(self):
+        self.users = FakeRepository([])
+        self.committed = False
+
+    async def _commit(self):
+        self.committed = True
+
+    async def rollback(self):
+        pass
+
 
 @pytest.mark.asyncio
-async def test_create_user(uow: AbstractUnitOfWork, obj_in: SignUp):
+async def test_create_user():
+    uow = FakeUnitOfWork()
+    db_user = User(
+        name="John Doe",
+        email="test@email.com",
+        password="asdasd",
+    )
+    output = await Auth.signup(uow=uow, user_in=db_user)
+    assert output is not None
+    assert uow.users.get("test@email.com") is not None
+    assert uow.committed
 
-    async with uow:
-        db_user = User(
-            username=obj_in.username,
-            name=obj_in.name,
-            email=obj_in.mail,
-            password=obj_in.password.get_secret_value(),
-            role_id=Roles.USER.value,
-            update_email_on_next_login=False,
-            update_password_on_next_login=False,
-        )
 
 
 # def check_existent_user(db: Session, email, document, password):

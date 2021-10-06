@@ -1,17 +1,23 @@
-from domain import Login, SignUp, Token
+from domain import User, Login, SignUp, Token
+from user.unit_of_work import AbstractUnitOfWork
 
 
 class Auth:
 
-    async def signup(self, user_in: SignUp):
-        print(user_in.dict())
-        return {"message": "user create with id 1"}
+    @staticmethod
+    async def signup(uow: AbstractUnitOfWork, user_in: SignUp):
+        async with uow:
+            _user = uow.users.add(user_in)
+            await uow.commit()
+        return {"message": f"user create with id {_user.id}"}
 
-    async def login(self, user_in: Login):
+    @staticmethod
+    async def login(user_in: Login):
         print(user_in.dict())
         return {"message": "login"}
 
-    async def dashboard(self, token: Token):
+    @staticmethod
+    async def dashboard(token: Token):
         print(token)
         return dict(
             user_id=1,

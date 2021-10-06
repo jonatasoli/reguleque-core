@@ -1,15 +1,20 @@
+import enum
 from pydantic import BaseModel, SecretStr
 from decimal import Decimal
 from datetime import datetime
 
 
+class Role(enum.Enum):
+    FREE_USER = 1
+    PAID_PLAN_BASIC = 2
+    ADMIN = 50
+
 class Login(BaseModel):
-    username: str
+    email: str
     password: SecretStr
 
 class SignUp(Login):
     name: str
-    email: str
 
 class Token(BaseModel):
     access_token: str
@@ -19,15 +24,15 @@ class Token(BaseModel):
 class User:
     def __init__(
         self,
-        username,
         password,
         name,
         email,
+        id=None,
         role=1,
         update_email_on_next_login=False,
         update_password_on_next_login=False
     ):
-        self.username = username
+        self.id = id
         self.password = password
         self.name = name
         self.email = email
@@ -35,14 +40,26 @@ class User:
         self.update_email_on_next_login=update_email_on_next_login,
         self.update_password_on_next_login=update_password_on_next_login,
 
+    def __call__(self):
+        return self.__dict__()
+
+    def __repr__(self):
+        return f"name={self.name}, email={self.email}"
+
+    def __dict__(self):
+        return dict(name=self.name, email=self.email)
+
     def create(self):
-        ...
+        return dict(name=self.name, email=self.email, password=self.password)
 
-    def update(self):
-        ...
+    def upgrade(self):
+        self.role = Role.PAID_PLAN_BASIC.value
 
-    def suspend(self):
-        ...
+    def upgrade_admin(self):
+        self.role = Role.ADMIN.value
+
+    def downgrade(self):
+        self.role = Role.FREE_USER.value
 
 
 class Auth:

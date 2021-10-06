@@ -34,7 +34,7 @@ def test_create_user(client, mocker):
         "user.service_layer.Auth.signup",
         return_value=dict(message='user create with id 2')
     )
-    data = dict(username="test", password="asdasd", mail="test@mail.com")
+    data = dict(password="asdasd", email="test@mail.com", name="John Doe")
     response = client.post("/user/create", headers=HEADERS, json=data)
     response_data = response.json()
     assert response.status_code == status.HTTP_201_CREATED
@@ -64,7 +64,7 @@ def test_login_user(client, mocker):
             message='login user'
         )
     )
-    data = dict(username="test", password="asdasd")
+    data = dict(email="test@mail.com", password="asdasd")
     response = client.post("/user/login", headers=HEADERS, json=data)
     response_header = response.headers.get('content-type')
     response_data = response.json()
