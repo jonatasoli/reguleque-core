@@ -7,7 +7,7 @@ class Auth:
     @staticmethod
     async def signup(uow: AbstractUnitOfWork, user_in: SignUp):
         async with uow:
-            _user = uow.users.add(user_in)
+            _user = await uow.users.add(user_in)
             await uow.commit()
         return {"message": f"user create with id {_user.id}"}
 
@@ -24,3 +24,12 @@ class Auth:
             name="John Doe",
             subscribe="Free"
         )
+
+
+    @staticmethod
+    async def check_existent_user(uow, email):
+        async with uow:
+            _user = await uow.users.get(email)
+        return _user
+
+

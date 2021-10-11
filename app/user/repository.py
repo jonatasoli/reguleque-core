@@ -1,5 +1,6 @@
 import abc
 from domain import User
+from sqlalchemy import select, between
 
 
 class AbstractRepository(abc.ABC):
@@ -16,11 +17,12 @@ class SqlAlchemyRepository(AbstractRepository):
     def __init__(self, session):
         self.session = session
 
-    def add(self, user):
-        self.session.add(user)
+    async def add(self, user):
+        await self.session.add(user)
 
-    def get(self, email):
-        return self.session.query(User).filter_by(email=email).one()
+    async def get(self, email):
+        smtm = select(User).where(User.email==email)
+        return self.session.execute(smtm).first()
 
     def list(self):
         return self.session.query(User).all()

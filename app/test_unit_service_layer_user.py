@@ -19,16 +19,16 @@ class FakeRepository(AbstractRepository):
         self._user = set(user)
         self.id = 0
 
-    def add(self, user):
+    async def add(self, user):
         self.id +=1
         self._user.add(user)
         user.id = self.id
         return user
 
-    def get(self, email):
+    async def get(self, email):
         return next(b for b in self._user if b.email == email)
 
-    def list(self):
+    async def list(self):
         return list(self._user)
 
 
@@ -59,33 +59,31 @@ async def test_create_user():
 
 
 
-# def check_existent_user(db: Session, email, document, password):
-#     try:
-#         db_user = db.query(User).filter_by(document=document).first()
-#         if not password:
-#             raise Exception("User not password")
-#         # if db_user and db_user.verify_password(password.get_secret_value()):
-#         #     return db_user
-#         logger.info("---------DB_USER-----------")
-#         logger.info(f"DB_USER -> {db_user}")
+@pytest.mark.asyncio
+async def test_check_existent_user():
+    uow = FakeUnitOfWork()
+    db_user = User(
+        name="John Doe",
+        email="test@email.com",
+        password="asdasd",
+    )
+    await Auth.signup(uow=uow, user_in=db_user)
+    output = await Auth.check_existent_user(uow=uow, email="test@email.com")
+    assert uow.users.get("test@email.com") is not None
+    assert output is not None
+    assert db_user == output
+
+
+# @pytest.mark.asyncio
+# def get_user():
+#     db_user = _get_user(db=db, document=document)
+#     if not password:
+#         raise Exception("User not password")
+#     if db_user and db_user.verify_password(password):
 #         return db_user
-#     except Exception as e:
-#         raise e
+#     else:
+#         raise Exception(f"User not finded {db_user.document}, {db_user.password}")
 
-
-# def get_user(db: Session, document: str, password: str):
-#     try:
-
-#         db_user = _get_user(db=db, document=document)
-#         if not password:
-#             raise Exception("User not password")
-#         if db_user and db_user.verify_password(password):
-#             return db_user
-#         else:
-#             raise Exception(f"User not finded {db_user.document}, {db_user.password}")
-
-#     except Exception as e:
-#         raise e
 
 
 # def authenticate_user(db, document: str, password: str):
