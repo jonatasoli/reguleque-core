@@ -17,7 +17,10 @@ async def create_user(
     user_in: SignUp,
     auth: Auth = Depends(),
 ):
-    return await auth.signup(user_in)
+    return await auth.signup(
+        uow=bootstrap.uow,
+        user_in=user_in
+    )
 
 
 @user.post("/user/login", status_code=status.HTTP_200_OK)

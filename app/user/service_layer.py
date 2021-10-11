@@ -7,9 +7,9 @@ class Auth:
     @staticmethod
     async def signup(uow: AbstractUnitOfWork, user_in: SignUp):
         async with uow:
-            _user = await uow.users.add(user_in)
+            await uow.users.add(user_in)
             await uow.commit()
-        return {"message": f"user create with id {_user.id}"}
+        return {"message": f"user create"}
 
     @staticmethod
     async def login(user_in: Login):

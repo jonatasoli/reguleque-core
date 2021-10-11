@@ -1,21 +1,40 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
-from sqlalchemy import MetaData
-from loguru import logger
-
-from passlib.context import CryptContext
-
+import uuid
+import random
 from typing import Any
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import MetaData
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
-from dynaconf import settings
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from loguru import logger
+from passlib.context import CryptContext
+from config import settings
+
+from domain import Role
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 metadata = MetaData
+
+
+def get_session():
+    DBSession = sessionmaker(expire_on_commit=False, class_=AsyncSession)
+    # DBSession.configure(binds={Order: get_engine_main()})
+    return DBSession()
+
+
+def get_engine_main():
+    """'postgresql://scott:tiger@localhost:5432/mydatabase'"""
+    return create_async_engine(
+        settings.DB_DSN_URI,
+        echo=True,
+    )
+
+
 
 @as_declarative()
 class Base:
@@ -33,15 +52,14 @@ class User(Base):
     user_timezone = Column(
         String(50),
         default="America/Sao_Paulo",
-        server_default="America/Sao_Paulo",
         nullable=True,
     )
     password = Column(String)
-    role_id = Column(Integer)
-    status = Column(String(20), default="deactivated")
-    uuid = Column(String, nullable=True)
-    update_email_on_next_login = Column(Boolean, default=False, server_default="0")
-    update_password_on_next_login = Column(Boolean, default=False, server_default="0")
+    role_id = Column(Integer, default=Role.FREE_USER.value)
+    status = Column(String(20), default="activated")
+    uuid = Column(String, nullable=True, unique=True, default=str(random.random()))
+    update_email_on_next_login = Column(Boolean, default=False)
+    update_password_on_next_login = Column(Boolean, default=False)
 
     def to_app_json(self, expand=False):
         return {
