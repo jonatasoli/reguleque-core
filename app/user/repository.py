@@ -20,15 +20,17 @@ class SqlAlchemyRepository(AbstractRepository):
         self.session = session
 
     async def add(self, user):
-        db_user = obj_in_to_db_obj(
-            model=User,
-            obj_in=user
+        db_user = User(
+            name=user.name,
+            password=user.password.get_secret_value(),
+            email=user.email,
         )
         return self.session.add(db_user)
 
     async def get(self, email):
         smtm = select(User).where(User.email==email)
-        return await self.session.execute(smtm).one()
+        _result =await self.session.execute(smtm)
+        return _result.scalars().first()
 
     def list(self):
         return self.session.query(User).all()

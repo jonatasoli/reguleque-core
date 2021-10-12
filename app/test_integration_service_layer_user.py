@@ -24,13 +24,12 @@ async def test_database(apply_migrations):
 @pytest.mark.asyncio
 async def test_create_user(apply_migrations, postgres_session):
     uow = SqlAlchemyUnitOfWork(session_factory=postgres_session)
-    db_user = User(
+    db_user = SignUp(
         name="John Doe",
         email="test@email.com",
         password="asdasd",
     )
     output = await Auth.signup(uow=uow, user_in=db_user)
-    import ipdb; ipdb.set_trace()
     assert output is not None
     assert uow.users.get("test@email.com") is not None
 

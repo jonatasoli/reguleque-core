@@ -21,21 +21,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 metadata = MetaData
 
 
-def get_session():
-    DBSession = sessionmaker(expire_on_commit=False, class_=AsyncSession)
-    # DBSession.configure(binds={Order: get_engine_main()})
-    return DBSession()
-
-
-def get_engine_main():
-    """'postgresql://scott:tiger@localhost:5432/mydatabase'"""
-    return create_async_engine(
-        settings.DB_DSN_URI,
-        echo=True,
-    )
-
-
-
 @as_declarative()
 class Base:
     id: Any
@@ -92,9 +77,14 @@ class User(Base):
             self.gen_hash(password)
 
     def gen_hash(self, password):
+        import ipdb; ipdb.set_trace()
         self.password = pwd_context.hash(password)
 
     def verify_password(self, password):
+        from loguru import logger
+        logger.debug(f"senha parametro {password}")
+        logger.debug(f"senha objeto {self.password}")
+        logger.debug(f"{pwd_context.verify(password, self.password)}")
         return pwd_context.verify(password, self.password)
 
 

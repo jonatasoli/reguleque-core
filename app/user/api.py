@@ -29,7 +29,10 @@ async def login(
     user_in: Login,
     auth: Auth = Depends()
 ):
-    return await auth.login(user_in)
+    return await auth.login(
+        uow=bootstrap.uow,
+        user_in=user_in
+    )
 
 
 @user.post("/user/dashboard", status_code=status.HTTP_200_OK)

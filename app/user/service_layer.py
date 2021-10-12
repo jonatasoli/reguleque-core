@@ -12,9 +12,21 @@ class Auth:
         return {"message": f"user create"}
 
     @staticmethod
-    async def login(user_in: Login):
+    async def login(uow: AbstractUnitOfWork, user_in: Login):
         print(user_in.dict())
-        return {"message": "login"}
+        logged = False
+        if not user_in.password:
+            raise Exception("User not password")
+        async with uow:
+            _user = await uow.users.get(user_in.email)
+            if _user:
+                logged = _user.verify_password(user_in.password.get_secret_value())
+            _user = _user.to_app_json()
+
+        if logged:
+            return _user
+        else:
+            raise Exception(f"User not finded {user_in.email}, {user_in.password}")
 
     @staticmethod
     async def dashboard(token: Token):
