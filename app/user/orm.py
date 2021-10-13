@@ -77,7 +77,6 @@ class User(Base):
             self.gen_hash(password)
 
     def gen_hash(self, password):
-        import ipdb; ipdb.set_trace()
         self.password = pwd_context.hash(password)
 
     def verify_password(self, password):

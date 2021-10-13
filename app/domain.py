@@ -98,3 +98,7 @@ class Admin:
 
     def update_payment_message(self):
         ...
+
+
+class UserException(Exception):
+    ...

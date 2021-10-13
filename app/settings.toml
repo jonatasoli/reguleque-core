@@ -1,4 +1,7 @@
 [default]
+SECRET_KEY="NOT_SECURE_SECRET_KEY"
+ACCESS_TOKEN_EXPIRE_MINUTES=15
+ALGORITHM = "HS256"
 
 [development]
 DB_DSN_URI = "postgresql+asyncpg://partyoudbuser:partyou123@172.15.0.2/coredb"
