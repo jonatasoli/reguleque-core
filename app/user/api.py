@@ -1,6 +1,6 @@
 from loguru import logger
 
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, HTTPException, Header
 
 from domain import Login, SignUp, Token
 from user.service_layer import Auth
@@ -38,7 +38,23 @@ async def login(
 @user.post("/user/dashboard", status_code=status.HTTP_200_OK)
 async def dashboard(
     *,
-    token: str = Depends(bootstrap.oauth2_scheme),
-    auth: Auth = Depends()
+    auth: Auth = Depends(),
+    token: str = Header(None),
 ):
-    return await auth.dashboard(token)
+    """
+{
+  "email": "email@kct.com",
+  "password": "asdasd"
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMsInV1aWQiOiIwLjM5NjQyNDY5OTM0OTc1NzIiLCJuYW1lIjoiSm9uaCBUaGlyZCIsImVtYWlsIjoiZW1haWxAa2N0LmNvbSIsInVzZXJfdGltZXpvbmUiOiJBbWVyaWNhL1Nhb19QYXVsbyIsInJvbGVfaWQiOjEsInN0YXR1cyI6ImFjdGl2YXRlZCIsImV4cCI6MTYzNDEzMTAwNX0.3dgCCY1C46Kg7w8jWp85Jxz-HtvXlhHZi7d6umZICuA"
+
+}
+    """
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    return await auth.dashboard(
+        token=token,
+        uow=bootstrap.uow
+    )

@@ -102,3 +102,7 @@ class Admin:
 
 class UserException(Exception):
     ...
+
+
+class AuthException(Exception):
+    ...

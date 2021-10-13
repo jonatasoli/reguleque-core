@@ -1,9 +1,10 @@
-from domain import User, Login, SignUp, Token, UserException
+from domain import User, Login, SignUp, Token, UserException, AuthException
 from user.unit_of_work import AbstractUnitOfWork
 
 from jose import JWTError, jwt
 from fastapi import HTTPException, status
 from datetime import timedelta, datetime
+from loguru import logger
 from config import settings
 
 
@@ -41,19 +42,9 @@ class Auth:
         )
 
     @staticmethod
-    async def dashboard(token: Token):
-        print(token)
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-        return dict(
-            user_id=1,
-            name="John Doe",
-            subscribe="Free"
-        )
-
+    async def dashboard(uow: AbstractUnitOfWork, token: Token):
+        _user = await Auth.check_auth_user(uow=uow,token=token)
+        return _user
 
     @staticmethod
     async def check_existent_user(uow, user_in):
@@ -82,3 +73,20 @@ class Auth:
         return jwt.encode(
             to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
         )
+
+
+    @staticmethod
+    async def check_auth_user(uow, token):
+        try:
+            payload = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+            )
+            email: str = payload.get("email")
+            if email is None:
+                raise UserException("Email not found!")
+        except JWTError as e:
+            logger.error(e)
+            raise AuthException("Token is not authorized!")
+
+        return payload
+
