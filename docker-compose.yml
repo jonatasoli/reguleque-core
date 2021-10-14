@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+
+  order-service:
+    build:
+      context: .
+    ports:
+      - 8000:8000
+    command: >
+      sh -c 'alembic upgrade head && uvicorn --factory main:create_app --host 0.0.0.0 --port 8000 --reload'
+
+
+  database:
+    image: postgres:13
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mypass

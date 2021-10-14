@@ -1,0 +1,5 @@
+create database coredb;
+\l
+\c du4pec4h6588o
+use du4pec4h6588o;
+\s du4pec4h6588o

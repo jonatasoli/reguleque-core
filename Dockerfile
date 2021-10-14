@@ -20,4 +20,6 @@ WORKDIR /app/
 
 # ENV PYTHONPATH=/app
 
-CMD gunicorn main:create_app --bind :8000 -k uvicorn.workers.UvicornWorker --timeout 90 --access-logfile=- --log-file=- --log-level info
+EXPOSE 8000
+
+CMD gunicorn main:create_app --bind :$PORT -k uvicorn.workers.UvicornWorker --timeout 90 --access-logfile=- --log-file=- --log-level debug
