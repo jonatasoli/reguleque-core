@@ -15,9 +15,9 @@ RUN pip install pip --upgrade
 RUN pip install -r requirements.txt
 
 
-WORKDIR /app/
 COPY ./app /app
+WORKDIR /app/
 
-ENV PYTHONPATH=/app
+# ENV PYTHONPATH=/app
 
-ENTRYPOINT [ "gunicorn", "main:create_app", "--bind", ":8000", "-k", "uvicorn.workers.UvicornWorker", "--timeout", "90", "--access-logfile=-", "--log-file=-", "--log-level", "info", ]
+CMD gunicorn main:create_app --bind :8000 -k uvicorn.workers.UvicornWorker --timeout 90 --access-logfile=- --log-file=- --log-level info
