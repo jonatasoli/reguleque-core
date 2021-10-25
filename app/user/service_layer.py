@@ -24,7 +24,12 @@ class Auth:
         return dict(
             token=encoded_jwt,
             token_type="bearer",
-            role=_user.get('role_id')
+            role=_user.get('role_id'),
+            id=_user.get('id'),
+            name=_user.get('name'),
+            subscribe="Free User",
+            expiration="12-12-2022",
+            limits="10 searchs per week"
         )
 
     @staticmethod
@@ -38,7 +43,12 @@ class Auth:
         return dict(
             token=encoded_jwt,
             token_type="bearer",
-            role=role
+            role=role,
+            id=_user.get('id'),
+            name=_user.get('name'),
+            subscribe="Free User",
+            expiration="12-12-2022",
+            limits="10 searchs per week"
         )
 
     @staticmethod

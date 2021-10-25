@@ -2,7 +2,7 @@ import uuid
 import random
 from typing import Any
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text
 from sqlalchemy import MetaData
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 
@@ -43,6 +43,8 @@ class User(Base):
     role_id = Column(Integer, default=Role.FREE_USER.value)
     status = Column(String(20), default="activated")
     uuid = Column(String, nullable=True, unique=True, default=str(random.random()))
+    subscribe_plan_id = Column(Integer, ForeignKey("subscribeplan.id"), default=1, server_default="1")
+
     update_email_on_next_login = Column(Boolean, default=False)
     update_password_on_next_login = Column(Boolean, default=False)
 
@@ -86,6 +88,16 @@ class User(Base):
         logger.debug(f"{pwd_context.verify(password, self.password)}")
         return pwd_context.verify(password, self.password)
 
+class SubscribePlan(Base):
+    id = Column(Integer, primary_key=True)
+    subscribe_id=Column(Integer, ForeignKey("subscribe.id"))
+    expiration=Column(DateTime())
+
+
+class Subscribe(Base):
+    id = Column(Integer, primary_key=True)
+    subscribe=Column(String)
+    limits=Column(Text)
 
 class UserResetPassword(Base):
     id = Column(Integer, primary_key=True)

@@ -41,14 +41,6 @@ async def dashboard(
     auth: Auth = Depends(),
     token: str = Header(None),
 ):
-    """
-{
-  "email": "email@kct.com",
-  "password": "asdasd"
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMsInV1aWQiOiIwLjM5NjQyNDY5OTM0OTc1NzIiLCJuYW1lIjoiSm9uaCBUaGlyZCIsImVtYWlsIjoiZW1haWxAa2N0LmNvbSIsInVzZXJfdGltZXpvbmUiOiJBbWVyaWNhL1Nhb19QYXVsbyIsInJvbGVfaWQiOjEsInN0YXR1cyI6ImFjdGl2YXRlZCIsImV4cCI6MTYzNDEzMTAwNX0.3dgCCY1C46Kg7w8jWp85Jxz-HtvXlhHZi7d6umZICuA"
-
-}
-    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
