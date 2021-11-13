@@ -106,3 +106,11 @@ class UserException(Exception):
 
 class AuthException(Exception):
     ...
+
+
+class UserNotFound(Exception):
+    ...
+
+
+class UserNotMatchPassword(Exception):
+    ...

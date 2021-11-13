@@ -1,5 +1,8 @@
-from domain import User, Login, SignUp, Token, UserException, AuthException
+from domain import User, Login, SignUp, Token, UserException, AuthException, UserNotFound, UserNotMatchPassword
 from user.unit_of_work import AbstractUnitOfWork
+from user.schemas import SubscribePlanDB, SubscribeDB, UserDB
+
+from user.adapters.convert_timestamp import convert_str_datetime, convert_datetime_str
 
 from jose import JWTError, jwt
 from fastapi import HTTPException, status
@@ -20,16 +23,18 @@ class Auth:
                 uow=uow,
                 user_in=user_in
             )
+            _plan = await uow.users.get_subscribe_plan(id=_user.subscribe_plan_id)
+            _subscribe = await uow.users.get_subscribe(id=_plan.subscribe_id)
         encoded_jwt = await Auth.get_access_token(user_token=_user)
         return dict(
             token=encoded_jwt,
             token_type="bearer",
-            role=_user.get('role_id'),
-            id=_user.get('id'),
-            name=_user.get('name'),
-            subscribe="Free User",
-            expiration="12-12-2022",
-            limits="10 searchs per week"
+            role=_user.role_id,
+            id=_user.id,
+            name=_user.name,
+            subscribe=_plan.id,
+            expiration=convert_datetime_str(_plan.expiration),
+            limits=_subscribe.limits
         )
 
     @staticmethod
@@ -39,17 +44,22 @@ class Auth:
             user_in=user_in
         )
         encoded_jwt = await Auth.get_access_token(user_token=_user)
-        role = _user.get('role_id')
+
+        async with uow:
+            _plan = await uow.users.get_subscribe_plan(id=_user.subscribe_plan_id)
+            _subscribe = await uow.users.get_subscribe(id=_plan.subscribe_id)
+
         return dict(
             token=encoded_jwt,
             token_type="bearer",
-            role=role,
-            id=_user.get('id'),
-            name=_user.get('name'),
-            subscribe="Free User",
-            expiration="12-12-2022",
-            limits="10 searchs per week"
+            role=_user.role_id,
+            id=_user.id,
+            name=_user.name,
+            subscribe=_plan.id,
+            expiration=convert_datetime_str(_plan.expiration),
+            limits=_subscribe.limits
         )
+
 
     @staticmethod
     async def dashboard(uow: AbstractUnitOfWork, token: Token):
@@ -65,15 +75,19 @@ class Auth:
             if _user:
                 logged = _user.verify_password(user_in.password.get_secret_value())
                 if not logged:
-                    raise UserException(
-                        f"Password not found {user_in.email}"
+                    raise UserNotMatchPassword(
+                        f"Password not match {user_in.email}"
                     )
-            _user = _user.to_app_json()
+            else:
+                raise UserNotFound(
+                    f"User not found in database with email {user_in.email}"
+                )
+            _user = UserDB.from_orm(_user)
         return _user
 
     @staticmethod
     async def get_access_token(user_token):
-        to_encode = user_token.copy()
+        to_encode = user_token.dict().copy()
         expires_delta = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         if expires_delta:
             expire = datetime.utcnow() + expires_delta
@@ -86,7 +100,7 @@ class Auth:
 
 
     @staticmethod
-    async def check_auth_user(uow, token):
+    async def check_auth_user(uow: AbstractUnitOfWork, token: str):
         try:
             payload = jwt.decode(
                 token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
@@ -99,4 +113,31 @@ class Auth:
             raise AuthException("Token is not authorized!")
 
         return payload
+
+    @staticmethod
+    async def get_subscribe_plan(uow: AbstractUnitOfWork, id: int):
+        if not id:
+            raise Exception("Id not found")
+        async with uow:
+            _plan = await uow.users.get_subscribe_plan(id=id)
+            if not _plan:
+                raise UserException(
+                    f"Plan id not found {id}"
+                )
+            _plan = SubscribePlanDB.from_orm(_plan)
+        return _plan
+
+
+    @staticmethod
+    async def get_subscribe(uow: AbstractUnitOfWork, id: int):
+        if not id:
+            raise Exception("Subscribe ID not found")
+        async with uow:
+            _subscribe = await uow.users.get_subscribe(id=id)
+            if not _subscribe:
+                raise UserException(
+                    f"Subscribe ID not found {id}"
+                )
+            _subscribe = SubscribeDB.from_orm(_subscribe)
+        return _subscribe
 

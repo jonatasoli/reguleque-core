@@ -1,7 +1,8 @@
 import abc
 from sqlalchemy import select, between
 
-from user.orm import User
+from user.orm import User, Subscribe, SubscribePlan
+from user.schemas import SubscribePlanDB, SubscribeDB, UserDB
 from user.adapters.db_obj_converter import obj_in_to_db_obj
 
 
@@ -31,6 +32,16 @@ class SqlAlchemyRepository(AbstractRepository):
         smtm = select(User).where(User.email==email)
         _result =await self.session.execute(smtm)
         return _result.scalars().first()
+
+    async def get_subscribe(self, id):
+        smtm = select(Subscribe).where(Subscribe.id==id)
+        _result =await self.session.execute(smtm)
+        return SubscribeDB.from_orm(_result.scalars().first())
+
+    async def get_subscribe_plan(self, id):
+        smtm = select(SubscribePlan).where(SubscribePlan.id==id)
+        _result =await self.session.execute(smtm)
+        return SubscribePlanDB.from_orm(_result.scalars().first())
 
     def list(self):
         return self.session.query(User).all()
