@@ -32,6 +32,7 @@ class Auth:
             role=_user.role_id,
             id=_user.id,
             name=_user.name,
+            email=_user.email,
             subscribe=_plan.id,
             expiration=convert_datetime_str(_plan.expiration),
             limits=_subscribe.limits
@@ -55,6 +56,7 @@ class Auth:
             role=_user.role_id,
             id=_user.id,
             name=_user.name,
+            email=_user.email,
             subscribe=_plan.id,
             expiration=convert_datetime_str(_plan.expiration),
             limits=_subscribe.limits
